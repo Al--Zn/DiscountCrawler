@@ -14,12 +14,19 @@ class DiscountPipeline(object):
 
 
 class JsonWithEncodingPipeline(object):
-
     def __init__(self):
-        self.file = codecs.open('jd.json', 'wb', encoding='utf-8')
-        self.file.write('{\n"item":[\n')
-
+        self.item_saved = set()
+    def open_spider(self, spider):
+        if (spider.name == 'jd'):
+            self.file = codecs.open('jd.json', 'wb', encoding='utf-8')
+            self.file.write('{\n"item":[\n')
+        elif (spider.name == 'smzdm'):
+            self.file = codecs.open('smzdm.json', 'wb', encoding='utf-8')
+            self.file.write('{\n"item":[\n')
     def process_item(self, item, spider):
+        if (item['name'] in self.item_saved):
+            return
+        self.item_saved.add(item['name'])
         line = json.dumps(dict(item), ensure_ascii=False) + ",\n"
         self.file.write(line)
         return item

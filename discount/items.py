@@ -18,3 +18,5 @@ class DiscountItem(Item):
     imgsrc = Field()
     discount = Field()
     source = Field()
+    rate = Field()
+    time = Field()
