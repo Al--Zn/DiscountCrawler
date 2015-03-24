@@ -23,7 +23,7 @@ class SmzdmSpider(CrawlSpider):
     start_urls = ['http://www.smzdm.com/youhui/fenlei/diannaoshuma']
     # start_urls = ['http://item.jd.com/1203874.html']
     base_url = 'http://www.smzdm.com'
-    page_pat = re.compile(r'/p(.*)$')
+    page_pat = re.compile(r'/p(\d+)$')
     tag_pat = re.compile(r'<.*?>')
     valid_category = [u'电脑数码',
                       u'家用电器',
@@ -72,7 +72,7 @@ class SmzdmSpider(CrawlSpider):
         sel = Selector(response)
         item_entries = sel.xpath('/html/body/section/div[1]/div[@class="list list_preferential "]')
         category = first_element(sel.xpath('/html/body/section/div[1]/div[1]/div[2]/ul/li/a/span/text()').extract())
-        if (not category in self.valid_category):
+        if not category in self.valid_category:
             category = self.alias_dict.get(category)
         for entry in item_entries:
             item = DiscountItem()
@@ -83,6 +83,8 @@ class SmzdmSpider(CrawlSpider):
             item['description'] = ''.join(item['description'].split())
             item['url'] = first_element(entry.xpath('div[2]/div[3]/div[1]/div/a/@href').extract())
             item['source'] = first_element(entry.xpath('div[2]/div[3]/div[1]/a/text()').extract())
+            if not item['source']:
+                item['source'] = u'什么值得买'
             item['category'] = category
             pos_vote = first_element(entry.xpath('div[2]/div[3]/a[1]/span[1]/text()').extract())
             neg_vote = first_element(entry.xpath('div[2]/div[3]/a[2]/span[1]/text()').extract())
@@ -92,10 +94,10 @@ class SmzdmSpider(CrawlSpider):
             yield item
         next_page = first_element(sel.xpath('//li[@class="pagedown"]/a/@href').extract())
         match = self.page_pat.search(response.url)
-        if (match):
+        if match:
             page_id = int(match.group(1))
-            if (page_id < 5 and next_page):
+            if page_id < 5 and next_page:
                 yield Request(next_page)
         else:
-            if (next_page):
+            if next_page:
                 yield Request(next_page)
