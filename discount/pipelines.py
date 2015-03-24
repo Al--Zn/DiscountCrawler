@@ -16,6 +16,7 @@ class DiscountPipeline(object):
 class JsonWithEncodingPipeline(object):
     def __init__(self):
         self.item_saved = set()
+        self.category_saved = set()
     def open_spider(self, spider):
         if (spider.name == 'jd'):
             self.file = codecs.open('jd.json', 'wb', encoding='utf-8')
@@ -26,6 +27,7 @@ class JsonWithEncodingPipeline(object):
     def process_item(self, item, spider):
         if (item['name'] in self.item_saved):
             return
+        self.category_saved.add(item['category'])
         self.item_saved.add(item['name'])
         line = json.dumps(dict(item), ensure_ascii=False) + ",\n"
         self.file.write(line)
@@ -34,3 +36,4 @@ class JsonWithEncodingPipeline(object):
     def close_spider(self, spider):
         self.file.write('{}\n]\n}')
         self.file.close()
+        print self.category_saved
